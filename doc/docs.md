@@ -1375,7 +1375,7 @@ fn (r Repo) find_user_by_id(id int) ?User {
 fn main() {
     repo := new_repo()
     user := repo.find_user_by_id(10) or { // Option types must be handled by `or` blocks
-        return  // `or` block must end with `return`, `break`, or `continue`
+        return
     }
     println(user.id) // "10"
     println(user.name) // "Charles"
@@ -1403,7 +1403,9 @@ user := repo.find_user_by_id(7) or {
 }
 ```
 
-You can also propagate errors:
+There are three ways of handling an optional.
+
+The first method is to propagate the error:
 
 ```v
 resp := http.get(url)?
@@ -1411,7 +1413,7 @@ println(resp.text)
 ```
 
 `http.get` returns `?http.Response`. Because it was called with `?`, the error will be propagated to the calling function
-(which must return an optional). If it is used in the `main()` function it will cause a panic.
+(which must return an optional as well). If it is used in the `main()` function it will cause a panic.
 
 The code above is essentially a condensed version of
 
@@ -1421,6 +1423,20 @@ resp := http.get(url) or {
 }
 println(resp.text)
 ```
+
+The second is to break from execution early:
+
+```v
+user := repo.find_user_by_id(7) or {
+    return
+}
+```
+
+Here, you can either `panic` or use a control flow statement (`return`, `break`, `continue`, etc).
+Note that `break` and `continue` can only be used inside a `for` loop, as explained here.
+
+
+3. By providing a default value, which will be assigned to the variable in case of an error
 
 V does not have a way to forcibly "unwrap" an optional (as other languages do, for instance Rust's `unwrap()`
 or Swift's `!`). To do this use `or { panic(err) }` instead.
